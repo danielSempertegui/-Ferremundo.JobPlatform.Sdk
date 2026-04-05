@@ -26,6 +26,24 @@ public static class DependencyInjection
             httpClient.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
         });
 
+        services.AddHttpClient<IWorkerNodeClient, WorkerNodeClient>((serviceProvider, httpClient) =>
+        {
+            var options = serviceProvider
+                .GetRequiredService<IOptions<JobPlatformClientOptions>>()
+                .Value;
+
+            httpClient.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
+        });
+
+        services.AddHttpClient<IJobDefinitionClient, JobDefinitionClient>((serviceProvider, httpClient) =>
+        {
+            var options = serviceProvider
+                .GetRequiredService<IOptions<JobPlatformClientOptions>>()
+                .Value;
+
+            httpClient.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
+        });
+
         return services;
     }
 }
