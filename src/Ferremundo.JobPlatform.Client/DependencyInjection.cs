@@ -1,6 +1,9 @@
+using Ferremundo.JobPlatform.Client.Abstractions;
 using Ferremundo.JobPlatform.Client.Configuration;
+using Ferremundo.JobPlatform.Client.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Ferremundo.JobPlatform.Client;
 
@@ -13,6 +16,15 @@ public static class DependencyInjection
             .Bind(configuration.GetSection(JobPlatformClientOptions.SectionName))
             .Validate(options => !string.IsNullOrWhiteSpace(options.BaseUrl), "JobPlatformClient:BaseUrl is required.")
             .ValidateOnStart();
+
+        services.AddHttpClient<IWorkerGroupClient, WorkerGroupClient>((serviceProvider, httpClient) =>
+        {
+            var options = serviceProvider
+                .GetRequiredService<IOptions<JobPlatformClientOptions>>()
+                .Value;
+
+            httpClient.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
+        });
 
         return services;
     }
