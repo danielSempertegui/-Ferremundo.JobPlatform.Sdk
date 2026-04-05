@@ -14,5 +14,7 @@ public interface IJobDefinitionClient
 
     Task<ResponseBase<JobDefinitionResponse>?> UpdateAsync(Guid jobDefinitionGuid, UpdateJobDefinitionRequest request, CancellationToken cancellationToken = default);
 
+    Task<ResponseBase<JobDefinitionResponse>?> ReportRuntimeStateAsync(Guid jobDefinitionGuid, ReportJobDefinitionRuntimeStateRequest request, CancellationToken cancellationToken = default);
+
     Task<ResponseBase<bool>?> DeleteAsync(Guid jobDefinitionGuid, CancellationToken cancellationToken = default);
 }

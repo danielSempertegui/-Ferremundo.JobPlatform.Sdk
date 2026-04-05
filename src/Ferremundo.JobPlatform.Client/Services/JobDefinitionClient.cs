@@ -29,6 +29,9 @@ public sealed class JobDefinitionClient : IJobDefinitionClient
     public Task<ResponseBase<JobDefinitionResponse>?> UpdateAsync(Guid jobDefinitionGuid, UpdateJobDefinitionRequest request, CancellationToken cancellationToken = default)
         => SendAsync<JobDefinitionResponse>(HttpMethod.Put, $"api/v1/job-definitions/{jobDefinitionGuid}", request, cancellationToken);
 
+    public Task<ResponseBase<JobDefinitionResponse>?> ReportRuntimeStateAsync(Guid jobDefinitionGuid, ReportJobDefinitionRuntimeStateRequest request, CancellationToken cancellationToken = default)
+        => SendAsync<JobDefinitionResponse>(HttpMethod.Post, $"api/v1/job-definitions/{jobDefinitionGuid}/runtime-state", request, cancellationToken);
+
     public Task<ResponseBase<bool>?> DeleteAsync(Guid jobDefinitionGuid, CancellationToken cancellationToken = default)
         => SendAsync<bool>(HttpMethod.Delete, $"api/v1/job-definitions/{jobDefinitionGuid}", cancellationToken: cancellationToken);
 

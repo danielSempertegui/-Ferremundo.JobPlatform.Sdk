@@ -29,6 +29,9 @@ public sealed class WorkerNodeClient : IWorkerNodeClient
     public Task<ResponseBase<WorkerNodeResponse>?> UpdateAsync(Guid workerNodeGuid, UpdateWorkerNodeRequest request, CancellationToken cancellationToken = default)
         => SendAsync<WorkerNodeResponse>(HttpMethod.Put, $"api/v1/worker-nodes/{workerNodeGuid}", request, cancellationToken);
 
+    public Task<ResponseBase<WorkerNodeResponse>?> ReportHeartbeatAsync(Guid workerNodeGuid, ReportWorkerNodeHeartbeatRequest request, CancellationToken cancellationToken = default)
+        => SendAsync<WorkerNodeResponse>(HttpMethod.Post, $"api/v1/worker-nodes/{workerNodeGuid}/heartbeat", request, cancellationToken);
+
     public Task<ResponseBase<bool>?> DeleteAsync(Guid workerNodeGuid, CancellationToken cancellationToken = default)
         => SendAsync<bool>(HttpMethod.Delete, $"api/v1/worker-nodes/{workerNodeGuid}", cancellationToken: cancellationToken);
 

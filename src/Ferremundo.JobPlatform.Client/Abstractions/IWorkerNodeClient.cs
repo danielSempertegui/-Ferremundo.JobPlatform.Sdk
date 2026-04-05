@@ -14,5 +14,7 @@ public interface IWorkerNodeClient
 
     Task<ResponseBase<WorkerNodeResponse>?> UpdateAsync(Guid workerNodeGuid, UpdateWorkerNodeRequest request, CancellationToken cancellationToken = default);
 
+    Task<ResponseBase<WorkerNodeResponse>?> ReportHeartbeatAsync(Guid workerNodeGuid, ReportWorkerNodeHeartbeatRequest request, CancellationToken cancellationToken = default);
+
     Task<ResponseBase<bool>?> DeleteAsync(Guid workerNodeGuid, CancellationToken cancellationToken = default);
 }
