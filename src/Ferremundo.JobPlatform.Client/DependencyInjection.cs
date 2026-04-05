@@ -71,8 +71,18 @@ public static class DependencyInjection
             httpClient.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
         });
 
+        services.AddHttpClient<IJobExecutionTraceClient, JobExecutionTraceClient>((serviceProvider, httpClient) =>
+        {
+            var options = serviceProvider
+                .GetRequiredService<IOptions<JobPlatformClientOptions>>()
+                .Value;
+
+            httpClient.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
+        });
+
         return services;
     }
 }
+
 
 
