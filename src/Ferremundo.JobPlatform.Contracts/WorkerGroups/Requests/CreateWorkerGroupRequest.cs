@@ -16,6 +16,15 @@ public sealed class CreateWorkerGroupRequest
     [MaxLength(500)]
     public string? Description { get; set; }
 
+    [Range(1, int.MaxValue)]
+    public int HeartbeatIntervalSeconds { get; set; } = 30;
+
+    [Range(1, int.MaxValue)]
+    public int CommandPollingIntervalSeconds { get; set; } = 15;
+
+    [Range(1, int.MaxValue)]
+    public int ScheduleSyncIntervalSeconds { get; set; } = 60;
+
     [Required]
     [EnumDataType(typeof(WorkerGroupStatus))]
     public WorkerGroupStatus Status { get; set; } = WorkerGroupStatus.Active;

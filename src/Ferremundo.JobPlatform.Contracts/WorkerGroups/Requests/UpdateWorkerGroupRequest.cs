@@ -16,6 +16,15 @@ public sealed class UpdateWorkerGroupRequest
     [MaxLength(500)]
     public string? Description { get; set; }
 
+    [Range(1, int.MaxValue)]
+    public int HeartbeatIntervalSeconds { get; set; }
+
+    [Range(1, int.MaxValue)]
+    public int CommandPollingIntervalSeconds { get; set; }
+
+    [Range(1, int.MaxValue)]
+    public int ScheduleSyncIntervalSeconds { get; set; }
+
     [Required]
     [EnumDataType(typeof(WorkerGroupStatus))]
     public WorkerGroupStatus Status { get; set; }

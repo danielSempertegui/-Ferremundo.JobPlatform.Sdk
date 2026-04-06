@@ -12,6 +12,12 @@ public sealed class WorkerGroupResponse
 
     public string? Description { get; set; }
 
+    public int HeartbeatIntervalSeconds { get; set; }
+
+    public int CommandPollingIntervalSeconds { get; set; }
+
+    public int ScheduleSyncIntervalSeconds { get; set; }
+
     public WorkerGroupStatus Status { get; set; }
 
     public DateTime CreatedAt { get; set; }
