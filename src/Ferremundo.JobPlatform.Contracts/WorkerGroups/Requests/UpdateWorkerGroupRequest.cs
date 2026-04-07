@@ -16,13 +16,13 @@ public sealed class UpdateWorkerGroupRequest
     [MaxLength(500)]
     public string? Description { get; set; }
 
-    [Range(1, int.MaxValue)]
+    [Range(30, 600)]
     public int HeartbeatIntervalSeconds { get; set; }
 
-    [Range(1, int.MaxValue)]
+    [Range(15, 600)]
     public int CommandPollingIntervalSeconds { get; set; }
 
-    [Range(1, int.MaxValue)]
+    [Range(30, 3600)]
     public int ScheduleSyncIntervalSeconds { get; set; }
 
     [Required]

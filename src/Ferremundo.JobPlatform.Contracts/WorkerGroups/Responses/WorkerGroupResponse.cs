@@ -24,7 +24,7 @@ public sealed class WorkerGroupResponse
 
     public string CreatedBy { get; set; } = default!;
 
-    public DateTime? UpdatedAt { get; set; }
+    public DateTime? ModifiedAt { get; set; }
 
-    public string? UpdatedBy { get; set; }
+    public string? ModifiedBy { get; set; }
 }
