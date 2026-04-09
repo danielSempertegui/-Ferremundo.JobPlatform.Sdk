@@ -1,3 +1,4 @@
+using Ferremundo.Integrations.Rest;
 using Ferremundo.JobPlatform.Client.Abstractions;
 using Ferremundo.JobPlatform.Client.Authentication;
 using Ferremundo.JobPlatform.Client.Configuration;
@@ -14,6 +15,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddJobPlatformClient(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddExternalRestSupport();
+
         services
             .AddOptions<JobPlatformClientOptions>()
             .Bind(configuration.GetSection(JobPlatformClientOptions.SectionName))
@@ -22,71 +25,30 @@ public static class DependencyInjection
 
         services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         services.TryAddScoped<IJobPlatformAccessTokenProvider, CurrentRequestAccessTokenProvider>();
-        services.AddTransient<JobPlatformAuthenticationHandler>();
+        services.TryAddScoped<IJobPlatformClientAuthenticationStrategy, JobPlatformClientAuthenticationStrategy>();
 
-        services.AddHttpClient<IWorkerGroupClient, WorkerGroupClient>((serviceProvider, httpClient) =>
-        {
-            var options = serviceProvider
-                .GetRequiredService<IOptions<JobPlatformClientOptions>>()
-                .Value;
-
-            httpClient.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
-        }).AddHttpMessageHandler<JobPlatformAuthenticationHandler>();
-
-        services.AddHttpClient<IWorkerNodeClient, WorkerNodeClient>((serviceProvider, httpClient) =>
-        {
-            var options = serviceProvider
-                .GetRequiredService<IOptions<JobPlatformClientOptions>>()
-                .Value;
-
-            httpClient.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
-        }).AddHttpMessageHandler<JobPlatformAuthenticationHandler>();
-
-        services.AddHttpClient<IJobDefinitionClient, JobDefinitionClient>((serviceProvider, httpClient) =>
-        {
-            var options = serviceProvider
-                .GetRequiredService<IOptions<JobPlatformClientOptions>>()
-                .Value;
-
-            httpClient.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
-        }).AddHttpMessageHandler<JobPlatformAuthenticationHandler>();
-
-        services.AddHttpClient<IJobScheduleClient, JobScheduleClient>((serviceProvider, httpClient) =>
-        {
-            var options = serviceProvider
-                .GetRequiredService<IOptions<JobPlatformClientOptions>>()
-                .Value;
-
-            httpClient.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
-        }).AddHttpMessageHandler<JobPlatformAuthenticationHandler>();
-
-        services.AddHttpClient<IJobCommandClient, JobCommandClient>((serviceProvider, httpClient) =>
-        {
-            var options = serviceProvider
-                .GetRequiredService<IOptions<JobPlatformClientOptions>>()
-                .Value;
-
-            httpClient.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
-        }).AddHttpMessageHandler<JobPlatformAuthenticationHandler>();
-
-        services.AddHttpClient<IJobExecutionClient, JobExecutionClient>((serviceProvider, httpClient) =>
-        {
-            var options = serviceProvider
-                .GetRequiredService<IOptions<JobPlatformClientOptions>>()
-                .Value;
-
-            httpClient.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
-        }).AddHttpMessageHandler<JobPlatformAuthenticationHandler>();
-
-        services.AddHttpClient<IJobExecutionTraceClient, JobExecutionTraceClient>((serviceProvider, httpClient) =>
-        {
-            var options = serviceProvider
-                .GetRequiredService<IOptions<JobPlatformClientOptions>>()
-                .Value;
-
-            httpClient.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
-        }).AddHttpMessageHandler<JobPlatformAuthenticationHandler>();
+        AddConfiguredHttpClient<IWorkerGroupClient, WorkerGroupClient>(services);
+        AddConfiguredHttpClient<IWorkerNodeClient, WorkerNodeClient>(services);
+        AddConfiguredHttpClient<IJobDefinitionClient, JobDefinitionClient>(services);
+        AddConfiguredHttpClient<IJobScheduleClient, JobScheduleClient>(services);
+        AddConfiguredHttpClient<IJobCommandClient, JobCommandClient>(services);
+        AddConfiguredHttpClient<IJobExecutionClient, JobExecutionClient>(services);
+        AddConfiguredHttpClient<IJobExecutionTraceClient, JobExecutionTraceClient>(services);
 
         return services;
+    }
+
+    private static void AddConfiguredHttpClient<TClientContract, TClientImplementation>(IServiceCollection services)
+        where TClientContract : class
+        where TClientImplementation : class, TClientContract
+    {
+        services.AddHttpClient<TClientContract, TClientImplementation>((serviceProvider, httpClient) =>
+        {
+            var options = serviceProvider
+                .GetRequiredService<IOptions<JobPlatformClientOptions>>()
+                .Value;
+
+            httpClient.BaseAddress = new Uri(options.BaseUrl, UriKind.Absolute);
+        });
     }
 }

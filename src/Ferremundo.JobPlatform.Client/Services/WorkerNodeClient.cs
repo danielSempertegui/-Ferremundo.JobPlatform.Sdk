@@ -1,61 +1,48 @@
-using System.Net.Http.Json;
-using System.Text.Json;
+using Ferremundo.Integrations.Rest.Abstractions.Correlation;
 using Ferremundo.JobPlatform.Client.Abstractions;
+using Ferremundo.JobPlatform.Client.Authentication;
+using Ferremundo.JobPlatform.Client.Configuration;
 using Ferremundo.JobPlatform.Contracts.Common;
 using Ferremundo.JobPlatform.Contracts.WorkerNodes.Requests;
 using Ferremundo.JobPlatform.Contracts.WorkerNodes.Responses;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Ferremundo.JobPlatform.Client.Services;
 
-public sealed class WorkerNodeClient : IWorkerNodeClient
+public sealed class WorkerNodeClient : JobPlatformClientBase, IWorkerNodeClient
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
-    private readonly HttpClient _httpClient;
-
-    public WorkerNodeClient(HttpClient httpClient)
+    public WorkerNodeClient(
+        HttpClient httpClient,
+        IOptions<JobPlatformClientOptions> options,
+        IJobPlatformClientAuthenticationStrategy authenticationStrategy,
+        IExternalCorrelationProvider correlationProvider,
+        ILogger<WorkerNodeClient> logger)
+        : base(httpClient, options, authenticationStrategy, correlationProvider, logger)
     {
-        _httpClient = httpClient;
     }
 
-    public Task<ResponseBase<IReadOnlyCollection<WorkerNodeResponse>>?> GetAllAsync(CancellationToken cancellationToken = default)
-        => SendAsync<IReadOnlyCollection<WorkerNodeResponse>>(HttpMethod.Get, "api/v1/worker-nodes", cancellationToken: cancellationToken);
+    public async Task<ResponseBase<IReadOnlyCollection<WorkerNodeResponse>>?> GetAllAsync(CancellationToken cancellationToken = default)
+        => await GetAsync<ResponseBase<IReadOnlyCollection<WorkerNodeResponse>>>("api/v1/worker-nodes", cancellationToken)
+           ?? throw CreateEmptyResponseException<ResponseBase<IReadOnlyCollection<WorkerNodeResponse>>>();
 
-    public Task<ResponseBase<WorkerNodeResponse>?> GetByGuidAsync(Guid workerNodeGuid, CancellationToken cancellationToken = default)
-        => SendAsync<WorkerNodeResponse>(HttpMethod.Get, $"api/v1/worker-nodes/{workerNodeGuid}", cancellationToken: cancellationToken);
+    public async Task<ResponseBase<WorkerNodeResponse>?> GetByGuidAsync(Guid workerNodeGuid, CancellationToken cancellationToken = default)
+        => await GetAsync<ResponseBase<WorkerNodeResponse>>($"api/v1/worker-nodes/{workerNodeGuid}", cancellationToken)
+           ?? throw CreateEmptyResponseException<ResponseBase<WorkerNodeResponse>>();
 
-    public Task<ResponseBase<WorkerNodeResponse>?> CreateAsync(CreateWorkerNodeRequest request, CancellationToken cancellationToken = default)
-        => SendAsync<WorkerNodeResponse>(HttpMethod.Post, "api/v1/worker-nodes", request, cancellationToken);
+    public async Task<ResponseBase<WorkerNodeResponse>?> CreateAsync(CreateWorkerNodeRequest request, CancellationToken cancellationToken = default)
+        => await PostAsync<CreateWorkerNodeRequest, ResponseBase<WorkerNodeResponse>>("api/v1/worker-nodes", request, cancellationToken)
+           ?? throw CreateEmptyResponseException<ResponseBase<WorkerNodeResponse>>();
 
-    public Task<ResponseBase<WorkerNodeResponse>?> UpdateAsync(Guid workerNodeGuid, UpdateWorkerNodeRequest request, CancellationToken cancellationToken = default)
-        => SendAsync<WorkerNodeResponse>(HttpMethod.Put, $"api/v1/worker-nodes/{workerNodeGuid}", request, cancellationToken);
+    public async Task<ResponseBase<WorkerNodeResponse>?> UpdateAsync(Guid workerNodeGuid, UpdateWorkerNodeRequest request, CancellationToken cancellationToken = default)
+        => await PutAsync<UpdateWorkerNodeRequest, ResponseBase<WorkerNodeResponse>>($"api/v1/worker-nodes/{workerNodeGuid}", request, cancellationToken)
+           ?? throw CreateEmptyResponseException<ResponseBase<WorkerNodeResponse>>();
 
-    public Task<ResponseBase<WorkerNodeResponse>?> ReportHeartbeatAsync(Guid workerNodeGuid, ReportWorkerNodeHeartbeatRequest request, CancellationToken cancellationToken = default)
-        => SendAsync<WorkerNodeResponse>(HttpMethod.Post, $"api/v1/worker-nodes/{workerNodeGuid}/heartbeat", request, cancellationToken);
+    public async Task<ResponseBase<WorkerNodeResponse>?> ReportHeartbeatAsync(Guid workerNodeGuid, ReportWorkerNodeHeartbeatRequest request, CancellationToken cancellationToken = default)
+        => await PostAsync<ReportWorkerNodeHeartbeatRequest, ResponseBase<WorkerNodeResponse>>($"api/v1/worker-nodes/{workerNodeGuid}/heartbeat", request, cancellationToken)
+           ?? throw CreateEmptyResponseException<ResponseBase<WorkerNodeResponse>>();
 
-    public Task<ResponseBase<bool>?> DeleteAsync(Guid workerNodeGuid, CancellationToken cancellationToken = default)
-        => SendAsync<bool>(HttpMethod.Delete, $"api/v1/worker-nodes/{workerNodeGuid}", cancellationToken: cancellationToken);
-
-    private async Task<ResponseBase<T>?> SendAsync<T>(
-        HttpMethod method,
-        string requestUri,
-        object? payload = null,
-        CancellationToken cancellationToken = default)
-    {
-        using var request = new HttpRequestMessage(method, requestUri);
-
-        if (payload is not null)
-        {
-            request.Content = JsonContent.Create(payload, options: SerializerOptions);
-        }
-
-        using var response = await _httpClient.SendAsync(request, cancellationToken);
-        var content = await response.Content.ReadFromJsonAsync<ResponseBase<T>>(SerializerOptions, cancellationToken);
-
-        if (content is null)
-        {
-            response.EnsureSuccessStatusCode();
-        }
-
-        return content;
-    }
+    public async Task<ResponseBase<bool>?> DeleteAsync(Guid workerNodeGuid, CancellationToken cancellationToken = default)
+        => await DeleteAsync<ResponseBase<bool>>($"api/v1/worker-nodes/{workerNodeGuid}", cancellationToken)
+           ?? throw CreateEmptyResponseException<ResponseBase<bool>>();
 }
